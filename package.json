@@ -1,0 +1,16 @@
+{
+  "name": "industria-antu",
+  "version": "1.0.0",
+  "description": "Industria Antu - Productos de Silicona y Equipos Industriales",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": [
+    "silicona",
+    "industrial",
+    "manufactura"
+  ],
+  "author": "Industria Antu",
+  "license": "MIT"
+}
