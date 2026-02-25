@@ -116,17 +116,149 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Product card hover effects
-const productCards = document.querySelectorAll('.product-card');
+// Products Carousel
+class ProductsCarousel {
+    constructor() {
+        this.carousel = document.querySelector('.products-carousel');
+        this.track = document.querySelector('.products-track');
+        this.cards = document.querySelectorAll('.product-card');
+        this.prevBtn = document.querySelector('.carousel-btn-prev');
+        this.nextBtn = document.querySelector('.carousel-btn-next');
+        this.indicatorsContainer = document.querySelector('.carousel-indicators');
 
-productCards.forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-15px) scale(1.02)';
-    });
-    
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0) scale(1)';
-    });
+        if (!this.carousel || !this.track) return;
+
+        this.currentIndex = 0;
+        this.isDragging = false;
+        this.startPos = 0;
+        this.currentTranslate = 0;
+        this.prevTranslate = 0;
+        this.animationID = 0;
+
+        this.init();
+    }
+
+    init() {
+        this.createIndicators();
+        this.updateButtonStates();
+
+        this.carousel.addEventListener('mousedown', this.dragStart.bind(this));
+        this.carousel.addEventListener('mousemove', this.drag.bind(this));
+        this.carousel.addEventListener('mouseup', this.dragEnd.bind(this));
+        this.carousel.addEventListener('mouseleave', this.dragEnd.bind(this));
+
+        this.carousel.addEventListener('touchstart', this.dragStart.bind(this));
+        this.carousel.addEventListener('touchmove', this.drag.bind(this));
+        this.carousel.addEventListener('touchend', this.dragEnd.bind(this));
+
+        this.prevBtn.addEventListener('click', () => this.goToSlide(this.currentIndex - 1));
+        this.nextBtn.addEventListener('click', () => this.goToSlide(this.currentIndex + 1));
+
+        this.carousel.addEventListener('contextmenu', (e) => {
+            if (this.isDragging) e.preventDefault();
+        });
+
+        window.addEventListener('resize', () => {
+            this.goToSlide(this.currentIndex);
+        });
+    }
+
+    createIndicators() {
+        this.cards.forEach((_, index) => {
+            const indicator = document.createElement('div');
+            indicator.classList.add('carousel-indicator');
+            if (index === 0) indicator.classList.add('active');
+            indicator.addEventListener('click', () => this.goToSlide(index));
+            this.indicatorsContainer.appendChild(indicator);
+        });
+    }
+
+    updateIndicators() {
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === this.currentIndex);
+        });
+    }
+
+    updateButtonStates() {
+        this.prevBtn.disabled = this.currentIndex === 0;
+        this.nextBtn.disabled = this.currentIndex === this.cards.length - 1;
+    }
+
+    getPositionX(event) {
+        return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+    }
+
+    dragStart(event) {
+        this.isDragging = true;
+        this.startPos = this.getPositionX(event);
+        this.animationID = requestAnimationFrame(this.animation.bind(this));
+        this.carousel.classList.add('grabbing');
+        this.track.classList.add('dragging');
+    }
+
+    drag(event) {
+        if (!this.isDragging) return;
+
+        const currentPosition = this.getPositionX(event);
+        const diff = currentPosition - this.startPos;
+        this.currentTranslate = this.prevTranslate + diff;
+    }
+
+    dragEnd() {
+        if (!this.isDragging) return;
+
+        this.isDragging = false;
+        cancelAnimationFrame(this.animationID);
+        this.carousel.classList.remove('grabbing');
+        this.track.classList.remove('dragging');
+
+        const movedBy = this.currentTranslate - this.prevTranslate;
+
+        if (movedBy < -100 && this.currentIndex < this.cards.length - 1) {
+            this.currentIndex++;
+        } else if (movedBy > 100 && this.currentIndex > 0) {
+            this.currentIndex--;
+        }
+
+        this.goToSlide(this.currentIndex);
+    }
+
+    animation() {
+        this.setSliderPosition();
+        if (this.isDragging) {
+            requestAnimationFrame(this.animation.bind(this));
+        }
+    }
+
+    goToSlide(index) {
+        if (index < 0 || index >= this.cards.length) return;
+
+        this.currentIndex = index;
+        const cardWidth = this.cards[0].offsetWidth;
+        const gap = 32;
+        const offset = -(cardWidth + gap) * this.currentIndex;
+
+        this.currentTranslate = offset;
+        this.prevTranslate = offset;
+
+        this.track.classList.remove('dragging');
+        this.setSliderPosition();
+        this.updateIndicators();
+        this.updateButtonStates();
+
+        setTimeout(() => {
+            this.track.classList.add('dragging');
+        }, 300);
+    }
+
+    setSliderPosition() {
+        this.track.style.transform = `translateX(${this.currentTranslate}px)`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new ProductsCarousel();
 });
 
 // Parallax effect for floating elements
