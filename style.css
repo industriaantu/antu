@@ -1001,3 +1001,27 @@ body {
         font-size: 0.9rem;
     }
 }
+
+
+.contact-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #111;
+    padding: 15px 10px;
+    border-top: 1px solid #333;
+}
+
+.contact-item {
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.contact-item:hover {
+    color: #00d4ff; /* mismo color accent aprox */
+}
